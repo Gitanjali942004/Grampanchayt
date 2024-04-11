@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:grampanchayat/ContactUs.dart';
@@ -5,6 +8,7 @@ import 'package:grampanchayat/EditProfile.dart';
 import 'package:intl/intl.dart';
 import 'AboutUs.dart';
 import 'CheckRequest.dart';
+import 'package:http/http.dart' as http;
 
 void main() {
   runApp(MyApp());
@@ -22,9 +26,9 @@ class MyApp extends StatelessWidget {
       home: RequestForm(selectedRole: selectedRole),
       routes: {
         '/request': (context) => RequestForm(selectedRole: selectedRole),
-        '/checkrequest':(context) => CheckRequest(),
-        '/aboutus':(context) => AboutUs(),
-        '/contactus':(context) => ContactUs(),
+        '/checkrequest':(context) => CheckRequest(selectedRole: selectedRole),
+        '/aboutus':(context) => AboutUs(selectedRole: selectedRole),
+        '/contactus':(context) => ContactUs(selectedRole: selectedRole),
         '/editprofile':(context) => EditProfile(selectedRole: selectedRole),
 
       },
@@ -42,6 +46,8 @@ class RequestForm extends StatefulWidget {
 }
 
 class _RequestFormState extends State<RequestForm> {
+
+
   final _formKey = GlobalKey<FormState>();
   TextEditingController _nameController = TextEditingController();
   TextEditingController _mobileController = TextEditingController();
@@ -55,6 +61,16 @@ class _RequestFormState extends State<RequestForm> {
   DateTime? _selectedDate;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
+  popup()
+  {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Data inserted successfully!'),
+        duration: Duration(seconds: 5), // Adjust the duration as needed
+      ),
+    );
+  }
+
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -62,6 +78,7 @@ class _RequestFormState extends State<RequestForm> {
       firstDate: DateTime(1900),
       lastDate: DateTime.now(),
     );
+
     if (picked != null && picked != _selectedDate) {
       setState(() {
         _selectedDate = picked;
@@ -79,6 +96,28 @@ class _RequestFormState extends State<RequestForm> {
       });
     }
   }
+
+  Future<void> senddata() async {
+    // Format the date
+    String formattedDate = _selectedDate != null
+        ? DateFormat('yyyy-MM-dd').format(_selectedDate!)
+        : '';
+
+    final response = await http.post(
+      Uri.parse("http://localhost/GrampanchayatApp/insertRequest.php"),
+      body: {
+        "name": _nameController.text,
+        "mobile": _mobileController.text,
+        "dob": formattedDate, // Use the formatted date
+        "age": _ageController.text,
+        "adhar": _adharController.text,
+        "purpose": _purposeController.text
+      },
+    );
+    var datauser = json.decode(response.body);
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -241,7 +280,7 @@ class _RequestFormState extends State<RequestForm> {
                     style: TextStyle(fontSize: 16.0),
                   ),
                   ElevatedButton(
-                    onPressed: _selectFile,
+                    onPressed:_selectFile,
                     child: Text('Upload'),
                   ),
                 ],
@@ -257,6 +296,8 @@ class _RequestFormState extends State<RequestForm> {
                     // Process the form data
                     // You can access form field values using controllers like _nameController.text, _mobileController.text, etc.
                     // Add your submit logic here
+                    senddata();
+                    popup();
                     print('Form is valid');
                   }
                 },
@@ -341,3 +382,4 @@ class _RequestFormState extends State<RequestForm> {
     );
   }
 }
+

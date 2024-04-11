@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:grampanchayat/HomePage.dart';
+import 'package:grampanchayat/signup.dart';
+
+import 'ForgotPassword.dart';
 
 void main() {
   runApp(MyApp());
@@ -30,6 +33,8 @@ class _MyAppState extends State<MyApp> {
       ),
       routes: {
         '/home': (context) => HomePage(selectedRole: selectedRole),
+        '/signup':(context) => signUpPage(),
+        '/forgotpassword':(context)=>ForgotPasswordPage(),
       },
     );
   }
@@ -82,8 +87,8 @@ class LoginPage extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.all(20.0),
                 child: Container(
-                  width: 600,
-                  height: 340,
+                  width: MediaQuery.of(context).size.width, // Adjusts container width to screen width
+                  height: 370, // You can adjust this height according to your requirement
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(2),
@@ -94,7 +99,7 @@ class LoginPage extends StatelessWidget {
                     child: Column(
                       children: [
                         CustomDropdownMenu(
-                          onChanged: onRoleChanged, // Pass the callback function to CustomDropdownMenu
+                          onChanged: onRoleChanged,
                         ),
                         TextFormField(
                           controller: _usernameController,
@@ -115,9 +120,14 @@ class LoginPage extends StatelessWidget {
                           ),
                         ),
                         SizedBox(height: 20),
-                        Text(
-                          "तुमचा पासवर्ड विसरला?",
-                          textAlign: TextAlign.end,
+                        TextButton(
+                          onPressed: ()
+                          {
+                             Navigator.pushNamed(context, '/forgotpassword');
+                          },
+                          child:
+                          Text("तुमचा पासवर्ड विसरला?"),
+                          style: ButtonStyle(alignment: Alignment.center),
                         ),
                         SizedBox(height: 20),
                         Row(
@@ -126,19 +136,29 @@ class LoginPage extends StatelessWidget {
                               child: ElevatedButton(
                                 onPressed: () {
                                   print("Button");
+
                                   Navigator.pushNamed(context, '/home');
                                 },
-                                child: Text('लॉगिन करा'),
+                                child: Text('लॉगिन करा',style: TextStyle(color: Colors.white)),
+                                style:ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.green,
+
+                                )
                               ),
                             ),
                           ],
                         ),
                         SizedBox(height: 20),
-                        Text("नविन युजर? नविन खाते उघडा"),
+                        TextButton(onPressed: ()
+                        {
+                          Navigator.pushNamed(context, '/signup');
+                        },
+                            child: Text("नविन युजर? नविन खाते उघडा")),
                       ],
                     ),
                   ),
                 ),
+
               ),
             ],
           ),

@@ -7,11 +7,14 @@ import 'package:grampanchayat/EditProfile.dart';
 import 'package:grampanchayat/RequestForm.dart';
 import 'package:grampanchayat/main.dart';
 
+import 'MyDrawer.dart';
+
 void main() {
   runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  final String selectedRole = 'ग्रामस्थ';
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -19,14 +22,14 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: AboutUs(),
+      home: AboutUs(selectedRole: selectedRole),
       routes: {
 
-        //'/request': (context) => RequestForm(),
-        '/checkrequest':(context) => CheckRequest(),
-        '/aboutus':(context) => AboutUs(),
-        '/contactus':(context) => ContactUs(),
-        //'/editprofile':(context) => EditProfile(),
+        '/request': (context) => RequestForm(selectedRole: selectedRole),
+        '/checkrequest':(context) => CheckRequest(selectedRole: selectedRole),
+        '/aboutus':(context) => AboutUs(selectedRole: selectedRole),
+        '/contactus':(context) => ContactUs(selectedRole: selectedRole),
+        '/editprofile':(context) => EditProfile(selectedRole: selectedRole),
 
       },
     );
@@ -34,6 +37,9 @@ class MyApp extends StatelessWidget {
 }
 
 class AboutUs extends StatefulWidget {
+  final String selectedRole;
+
+  const AboutUs({Key? key, required this.selectedRole}) : super(key: key);
   @override
   _AboutUsState createState() => _AboutUsState();
 }
@@ -58,83 +64,183 @@ class _AboutUsState extends State<AboutUs> {
           },
         ),
       ),
-      body: Text('About Us '),
-      drawer: Drawer(
-        child: ListView(
-          padding: const EdgeInsets.all(0),
-          children: [
-            const DrawerHeader(
-              decoration: BoxDecoration(
-                color: Colors.green,
+      body: Column(
+        children: [
+          Center(
+            child: Text(
+              "ग्रामपंचायत पोतले",
+              style: TextStyle(
+                fontSize: 30,
+                color: Color(0xFF0B2447),
+                fontWeight: FontWeight.bold,
               ),
-              child: UserAccountsDrawerHeader(
-                decoration: BoxDecoration(color: Colors.green),
-                accountName: Text(
-                  "Abhishek Mishra",
-                  style: TextStyle(fontSize: 18),
-                ),
-                accountEmail: Text("abhishekm977@gmail.com"),
-                currentAccountPictureSize: Size.square(50),
-                currentAccountPicture: CircleAvatar(
-                  backgroundColor: Color.fromARGB(255, 165, 255, 137),
-                  child: Text(
-                    "A",
-                    style: TextStyle(fontSize: 30.0, color: Colors.blue),
-                  ),
-                ),
-              ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.home),
-              title: const Text(' Home '),
-              onTap: () {
-                Navigator.pushNamed(context, '/home');
-              },
+              textAlign: TextAlign.center,
             ),
 
-              ListTile(
-                leading: const Icon(Icons.book),
-                title: const Text(' Check Request '),
-                onTap: () {
-                  Navigator.pushNamed(context, '/checkrequest');
-                },
-              ),
-            ListTile(
-              leading: const Icon(Icons.info),
-              title: const Text(' About Us'),
-              onTap: () {
-                Navigator.pushNamed(context, '/aboutus');
-
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.call),
-              title: const Text(' Contact Us '),
-              onTap: () {
-                Navigator.pushNamed(context, '/contactus');
-              },
-            ),
-
-            ListTile(
-                leading: const Icon(Icons.edit),
-                title: const Text(' Edit Profile '),
-                onTap: () {
-                  Navigator.pushNamed(context, '/editprofile');
-                },
-              ),
-
-
-            ListTile(
-              leading: const Icon(Icons.logout),
-              title: const Text('LogOut'),
-              onTap: () {
-                Navigator.pop(context);
-
-              },
-            ),
-          ],
-        ),
+          ),
+        ],
+      ),
+      drawer: MyDrawer(
+        selectedRole: widget.selectedRole,
+        onNavigation: (route) {
+          Navigator.pushNamed(context, route); // Navigate to selected route
+        },
       ),
     );
   }
 }
+
+//code which include sarpanch card view and alll
+// import 'package:flutter/material.dart';
+//
+// void main() {
+//   runApp(MyApp());
+// }
+//
+// class MyApp extends StatelessWidget {
+//   final String selectedRole = 'ग्रामस्थ';
+//   @override
+//   Widget build(BuildContext context) {
+//     return MaterialApp(
+//       title: 'Form Example',
+//       theme: ThemeData(
+//         primarySwatch: Colors.blue,
+//       ),
+//       home: AboutUs(selectedRole: selectedRole,),
+//     );
+//   }
+// }
+//
+// class AboutUs extends StatefulWidget {
+//   final String selectedRole;
+//
+//   const AboutUs({Key? key, required this.selectedRole}) : super(key: key);
+//   @override
+//   _AboutUsState createState() => _AboutUsState();
+// }
+//
+// class _AboutUsState extends State<AboutUs> {
+//   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       key: _scaffoldKey,
+//       backgroundColor: Color(0xFFA5D7E8),
+//       appBar: AppBar(
+//         backgroundColor: Colors.green,
+//         title: Text("Grampanchayat App"),
+//         leading: IconButton(
+//           icon: Icon(Icons.menu), // Hamburger icon
+//           onPressed: () {
+//             _scaffoldKey.currentState?.openDrawer(); // Open the Drawer
+//           },
+//         ),
+//       ),
+//       body: Column(
+//         crossAxisAlignment: CrossAxisAlignment.stretch,
+//         children: [
+//           Padding(
+//             padding: const EdgeInsets.all(16.0),
+//             child: Text(
+//               "ग्रामपंचायत पोतले",
+//               style: TextStyle(
+//                 fontSize: 30,
+//                 color: Color(0xFF0B2447),
+//                 fontWeight: FontWeight.bold,
+//               ),
+//               textAlign: TextAlign.center,
+//             ),
+//           ),
+//           Expanded(
+//             child: ListView.builder(
+//               itemCount: 4, // Number of Sarpanchs
+//               itemBuilder: (context, index) {
+//                 return Padding(
+//                   padding: const EdgeInsets.all(8.0),
+//                   child: Card(
+//                     elevation: 4,
+//                     child: Padding(
+//                       padding: const EdgeInsets.all(16.0),
+//                       child: Column(
+//                         crossAxisAlignment: CrossAxisAlignment.stretch,
+//                         children: [
+//                           Text(
+//                             "Sarpanch $index",
+//                             style: TextStyle(
+//                               fontSize: 20,
+//                               fontWeight: FontWeight.bold,
+//                             ),
+//                             textAlign: TextAlign.center,
+//                           ),
+//                           SizedBox(height: 10),
+//                           Image.asset(
+//                             'assets/images/sarpanch_$index.jpg', // Provide path to your image
+//                             height: 100,
+//                             width: 100,
+//                             fit: BoxFit.cover,
+//                           ),
+//                           SizedBox(height: 10),
+//                           Row(
+//                             children: [
+//                               Expanded(
+//                                 flex: 1,
+//                                 child: Column(
+//                                   crossAxisAlignment: CrossAxisAlignment.end,
+//                                   children: [
+//                                     Text(
+//                                       "Name:",
+//                                       style: TextStyle(
+//                                         fontWeight: FontWeight.bold,
+//                                       ),
+//                                     ),
+//                                     SizedBox(height: 5),
+//                                     Text(
+//                                       "Contact Number:",
+//                                       style: TextStyle(
+//                                         fontWeight: FontWeight.bold,
+//                                       ),
+//                                     ),
+//                                     SizedBox(height: 5),
+//                                     Text(
+//                                       "Designation:",
+//                                       style: TextStyle(
+//                                         fontWeight: FontWeight.bold,
+//                                       ),
+//                                     ),
+//                                   ],
+//                                 ),
+//                               ),
+//                               Expanded(
+//                                 flex: 3,
+//                                 child: Column(
+//                                   crossAxisAlignment: CrossAxisAlignment.start,
+//                                   children: [
+//                                     Text("Sarpanch Name $index"),
+//                                     Text("Sarpanch Contact Number $index"),
+//                                     Text("Sarpanch Designation $index"),
+//                                   ],
+//                                 ),
+//                               ),
+//                             ],
+//                           ),
+//                           SizedBox(height: 10),
+//                           ElevatedButton(
+//                             onPressed: () {
+//                               // Add onPressed action here
+//                             },
+//                             child: Text("View Profile"),
+//                           ),
+//                         ],
+//                       ),
+//                     ),
+//                   ),
+//                 );
+//               },
+//             ),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+// }

@@ -1,132 +1,75 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:grampanchayat/RequestForm.dart';
-import 'package:grampanchayat/AboutUs.dart';
-import 'package:grampanchayat/CheckRequest.dart';
-import 'package:grampanchayat/ContactUs.dart';
-import 'package:grampanchayat/EditProfile.dart';
-import 'package:grampanchayat/RequestForm.dart';
-import 'package:grampanchayat/main.dart';
-
-void main() {
-  runApp(MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Form Example',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: CheckRequest(),
-      routes: {
-       // '/request': (context) => RequestForm(),
-        '/checkrequest':(context) => CheckRequest(),
-        '/aboutus':(context) => AboutUs(),
-        '/contactus':(context) => ContactUs(),
-        //'/editprofile':(context) => EditProfile(),
-
-      },
-    );
-  }
-}
+import 'package:http/http.dart' as http;
 
 class CheckRequest extends StatefulWidget {
+  final String selectedRole;
+
+  const CheckRequest({Key? key, required this.selectedRole}) : super(key: key);
+
   @override
   _CheckRequestState createState() => _CheckRequestState();
 }
 
 class _CheckRequestState extends State<CheckRequest> {
-  final _formKey = GlobalKey<FormState>();
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  List<Map<String, dynamic>> requests = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchRequests();
+  }
+
+  Future<void> fetchRequests() async {
+    try {
+      final response = await http.get(Uri.parse('http://localhost/fetchRequests.php'));
+      print('Response status code: ${response.statusCode}');
+      print('Response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final List<Map<String, dynamic>> parsedRequests = List<Map<String, dynamic>>.from(json.decode(response.body));
+        setState(() {
+          requests = parsedRequests;
+          isLoading = false;
+        });
+      } else {
+        throw Exception('Failed to load requests: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error fetching requests: $e');
+      setState(() {
+        isLoading = false;
+      });
+      // Handle error gracefully, display an error message or retry logic if necessary
+    }
+  }
+
 
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      key: _scaffoldKey,
-      backgroundColor: Color(0xFFA5D7E8),
       appBar: AppBar(
-        backgroundColor: Colors.green,
-        title: Text("Grampanchayat App"),
-        leading: IconButton(
-          icon: Icon(Icons.menu), // Hamburger icon
-          onPressed: () {
-            _scaffoldKey.currentState?.openDrawer(); // Open the Drawer
-          },
-        ),
+        title: Text("Check Requests"),
       ),
-      body: Text('Check Request '),
-      drawer: Drawer(
-        child: ListView(
-          padding: const EdgeInsets.all(0),
-          children: [
-            const DrawerHeader(
-              decoration: BoxDecoration(
-                color: Colors.green,
-              ),
-              child: UserAccountsDrawerHeader(
-                decoration: BoxDecoration(color: Colors.green),
-                accountName: Text(
-                  "Abhishek Mishra",
-                  style: TextStyle(fontSize: 18),
-                ),
-                accountEmail: Text("abhishekm977@gmail.com"),
-                currentAccountPictureSize: Size.square(50),
-                currentAccountPicture: CircleAvatar(
-                  backgroundColor: Color.fromARGB(255, 165, 255, 137),
-                  child: Text(
-                    "A",
-                    style: TextStyle(fontSize: 30.0, color: Colors.blue),
-                  ),
-                ),
-              ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.home),
-              title: const Text(' Home '),
-              onTap: () {
-                Navigator.pushNamed(context, '/home');
-              },
-            ),
-
-            ListTile(
-                leading: const Icon(Icons.book),
-                title: const Text(' Check Request '),
-                onTap: () {
-                  Navigator.pushNamed(context, '/checkrequest');
-                },
-              ),
-            ListTile(
-              leading: const Icon(Icons.info),
-              title: const Text(' About Us'),
-              onTap: () {
-                Navigator.pushNamed(context, '/aboutus');
-
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.call),
-              title: const Text(' Contact Us '),
-              onTap: () {
-                Navigator.pushNamed(context, '/contactus');
-              },
-            ),
-
-
-
-
-            ListTile(
-              leading: const Icon(Icons.logout),
-              title: const Text('LogOut'),
-              onTap: () {
-                Navigator.pop(context);
-
-              },
-            ),
-          ],
-        ),
+      body: isLoading
+          ? Center(
+        child: CircularProgressIndicator(),
+      )
+          : requests.isEmpty
+          ? Center(
+        child: Text('No requests found'),
+      )
+          : ListView.builder(
+        itemCount: requests.length,
+        itemBuilder: (context, index) {
+          return ListTile(
+            title: Text(requests[index]['name']),
+            subtitle: Text(requests[index]['mobile']),
+            // Add more fields as needed
+          );
+        },
       ),
     );
   }
