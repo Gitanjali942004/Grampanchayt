@@ -2,13 +2,12 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:file_picker/file_picker.dart';
-import 'package:grampanchayat/ContactUs.dart';
-import 'package:grampanchayat/EditProfile.dart';
 import 'package:intl/intl.dart';
-import 'AboutUs.dart';
-import 'CheckRequest.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:http/http.dart' as http;
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+import 'MyDrawer.dart';
 
 void main() {
   runApp(MyApp());
@@ -16,6 +15,7 @@ void main() {
 
 class MyApp extends StatelessWidget {
   final String selectedRole = 'ग्रामस्थ';
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -26,11 +26,6 @@ class MyApp extends StatelessWidget {
       home: RequestForm(selectedRole: selectedRole),
       routes: {
         '/request': (context) => RequestForm(selectedRole: selectedRole),
-        '/checkrequest':(context) => CheckRequest(selectedRole: selectedRole),
-        '/aboutus':(context) => AboutUs(selectedRole: selectedRole),
-        '/contactus':(context) => ContactUs(selectedRole: selectedRole),
-        '/editprofile':(context) => EditProfile(selectedRole: selectedRole),
-
       },
     );
   }
@@ -46,8 +41,6 @@ class RequestForm extends StatefulWidget {
 }
 
 class _RequestFormState extends State<RequestForm> {
-
-
   final _formKey = GlobalKey<FormState>();
   TextEditingController _nameController = TextEditingController();
   TextEditingController _mobileController = TextEditingController();
@@ -57,19 +50,8 @@ class _RequestFormState extends State<RequestForm> {
   TextEditingController _purposeController = TextEditingController();
   String? _documentType;
   List<String> _documentTypes = ['Passport', 'ID Card', 'Driver License'];
-  PlatformFile? _file;
+  FilePickerResult? _file;
   DateTime? _selectedDate;
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-
-  popup()
-  {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Data inserted successfully!'),
-        duration: Duration(seconds: 5), // Adjust the duration as needed
-      ),
-    );
-  }
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
@@ -92,10 +74,12 @@ class _RequestFormState extends State<RequestForm> {
 
     if (result != null) {
       setState(() {
-        _file = result.files.first;
+
+        _file = result;
       });
     }
   }
+
 
   Future<void> senddata() async {
     // Format the date
@@ -103,36 +87,37 @@ class _RequestFormState extends State<RequestForm> {
         ? DateFormat('yyyy-MM-dd').format(_selectedDate!)
         : '';
 
-    final response = await http.post(
-      Uri.parse("http://localhost/GrampanchayatApp/insertRequest.php"),
-      body: {
-        "name": _nameController.text,
-        "mobile": _mobileController.text,
-        "dob": formattedDate, // Use the formatted date
-        "age": _ageController.text,
-        "adhar": _adharController.text,
-        "purpose": _purposeController.text
-      },
-    );
-    var datauser = json.decode(response.body);
+    // Add your Firestore collection reference
+    CollectionReference requestCollection =
+    FirebaseFirestore.instance.collection('requests');
+
+    // Add data to Firestore
+    await requestCollection.add({
+      'name': _nameController.text,
+      'mobile': _mobileController.text,
+      'dob': formattedDate,
+      'age': _ageController.text,
+      'adhar': _adharController.text,
+      'purpose': _purposeController.text,
+      'documentType': _documentType, // Add the selected document type
+      'status': 'pending', // Set the status to "pending"
+    });
+
+    // Clear form fields
+    _nameController.clear();
+    _mobileController.clear();
+    _dobController.clear();
+    _ageController.clear();
+    _adharController.clear();
+    _purposeController.clear();
+    _documentType = null;
   }
-
-
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      key: _scaffoldKey,
-      backgroundColor: Color(0xFFA5D7E8),
       appBar: AppBar(
-        backgroundColor: Colors.green,
-        title: Text("Grampanchayat App"),
-        leading: IconButton(
-          icon: Icon(Icons.menu), // Hamburger icon
-          onPressed: () {
-            _scaffoldKey.currentState?.openDrawer(); // Open the Drawer
-          },
-        ),
+        title: Text("Request Form"),
       ),
       body: Padding(
         padding: EdgeInsets.all(16.0),
@@ -150,7 +135,7 @@ class _RequestFormState extends State<RequestForm> {
                   ),
                 ),
                 validator: (value) {
-                  if (value?.isEmpty ?? true) {
+                  if (value!.isEmpty) {
                     return 'Please enter your name';
                   }
                   return null;
@@ -168,7 +153,7 @@ class _RequestFormState extends State<RequestForm> {
                 ),
                 keyboardType: TextInputType.phone,
                 validator: (value) {
-                  if (value?.isEmpty ?? true) {
+                  if (value!.isEmpty) {
                     return 'Please enter your mobile number';
                   }
                   return null;
@@ -202,7 +187,7 @@ class _RequestFormState extends State<RequestForm> {
                 ),
                 keyboardType: TextInputType.number,
                 validator: (value) {
-                  if (value?.isEmpty ?? true) {
+                  if (value!.isEmpty) {
                     return 'Please enter your age';
                   }
                   return null;
@@ -220,7 +205,7 @@ class _RequestFormState extends State<RequestForm> {
                 ),
                 keyboardType: TextInputType.number,
                 validator: (value) {
-                  if (value?.isEmpty ?? true) {
+                  if (value!.isEmpty) {
                     return 'Please enter your Adhar number';
                   }
                   return null;
@@ -265,7 +250,7 @@ class _RequestFormState extends State<RequestForm> {
                   ),
                 ),
                 validator: (value) {
-                  if (value?.isEmpty ?? true) {
+                  if (value!.isEmpty) {
                     return 'Please enter purpose';
                   }
                   return null;
@@ -286,100 +271,31 @@ class _RequestFormState extends State<RequestForm> {
                 ],
               ),
               SizedBox(height: 10.0),
-              _file != null
-                  ? Text('File Selected: ${_file!.name}')
-                  : SizedBox(),
-              SizedBox(height: 20.0),
               ElevatedButton(
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
-                    // Process the form data
-                    // You can access form field values using controllers like _nameController.text, _mobileController.text, etc.
-                    // Add your submit logic here
                     senddata();
-                    popup();
-                    print('Form is valid');
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Form submitted successfully!'),
+                      ),
+
+                    );
                   }
                 },
                 child: Text('Submit'),
               ),
+
             ],
           ),
         ),
       ),
-      drawer: Drawer(
-        child: ListView(
-          padding: const EdgeInsets.all(0),
-          children: [
-            const DrawerHeader(
-              decoration: BoxDecoration(
-                color: Colors.green,
-              ),
-              child: UserAccountsDrawerHeader(
-                decoration: BoxDecoration(color: Colors.green),
-                accountName: Text(
-                  "Abhishek Mishra",
-                  style: TextStyle(fontSize: 18),
-                ),
-                accountEmail: Text("abhishekm977@gmail.com"),
-                currentAccountPictureSize: Size.square(50),
-                currentAccountPicture: CircleAvatar(
-                  backgroundColor: Color.fromARGB(255, 165, 255, 137),
-                  child: Text(
-                    "A",
-                    style: TextStyle(fontSize: 30.0, color: Colors.blue),
-                  ),
-                ),
-              ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.home),
-              title: const Text(' Home '),
-              onTap: () {
-                Navigator.pushNamed(context, '/home');
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.book),
-              title: const Text(' Issue Request '),
-              onTap: () {
-                Navigator.pushNamed(context, '/request');
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.info),
-              title: const Text(' About Us'),
-              onTap: () {
-                Navigator.pushNamed(context, '/aboutus');
-
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.call),
-              title: const Text(' Contact Us '),
-              onTap: () {
-                Navigator.pushNamed(context, '/contactus');
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.edit),
-              title: const Text(' Edit Profile '),
-              onTap: () {
-                Navigator.pushNamed(context, '/editprofile');
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.logout),
-              title: const Text('LogOut'),
-              onTap: () {
-                Navigator.pop(context);
-
-              },
-            ),
-          ],
-        ),
+      drawer: MyDrawer(
+        selectedRole: widget.selectedRole, // Pass selectedRole from widget
+        onNavigation: (route) {
+          Navigator.pushNamed(context, route); // Navigate to selected route
+        },
       ),
     );
   }
 }
-

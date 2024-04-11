@@ -1,10 +1,14 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:grampanchayat/HomePage.dart';
 import 'package:grampanchayat/signup.dart';
-
+import 'firebase_options.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'ForgotPassword.dart';
 
-void main() {
+void main() async{
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform,);
   runApp(MyApp());
 }
 
