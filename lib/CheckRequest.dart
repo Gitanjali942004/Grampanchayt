@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+//import 'package:flutter_sms/flutter_sms.dart';
 
 class CheckRequest extends StatefulWidget {
   final String selectedRole;
@@ -25,12 +26,40 @@ class _CheckRequestState extends State<CheckRequest> {
     return querySnapshot.docs.map((doc) => doc.data()).toList();
   }
 
-  void markCompleted(int index) {
-    // Add logic to mark request as completed
-  }
+  Future<void> markCompleted(String adhar, String mobileNumber) async {
+    try {
+      // Query Firestore to find the document with the provided adhar
+      QuerySnapshot<Map<String, dynamic>> querySnapshot =
+      await FirebaseFirestore.instance
+          .collection('requests')
+          .where('adhar', isEqualTo: adhar)
+          .get();
 
-  void markPending(int index) {
-    // Add logic to mark request as pending
+      // Check if any document with the provided adhar exists
+      if (querySnapshot.docs.isNotEmpty) {
+        // Assuming there's only one document with the provided adhar, get its reference
+        DocumentReference<Map<String, dynamic>> documentRef =
+            querySnapshot.docs.first.reference;
+
+        // Update status value to 'completed' in Firestore
+        await documentRef.update({'status': 'completed'});
+
+        // Send SMS
+        String message = 'Your document is ready.';
+        List<String> recipients = [mobileNumber];
+       // await sendSMS(message: message, recipients: recipients);
+       // print('SMS sent successfully');
+
+        // Reset the state to trigger a rebuild
+        setState(() {
+          _futureRequests = fetchRequests();
+        });
+      } else {
+        print('Document with adhar $adhar not found');
+      }
+    } catch (e) {
+      print('Error marking request as completed: $e');
+    }
   }
 
   void viewDetails(Map<String, dynamic> requestData) {
@@ -96,6 +125,11 @@ class _CheckRequestState extends State<CheckRequest> {
             return ListView.builder(
               itemCount: requests.length,
               itemBuilder: (context, index) {
+                bool isPending = requests[index]['status'] == 'pending';
+                bool isCompleted = requests[index]['status'] == 'completed';
+                Color tileColor =
+                isPending ? Colors.red : (isCompleted ? Colors.green : Colors.transparent);
+                String buttonText = isPending ? 'Pending' : 'Completed';
                 return Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8.0),
                   child: Card(
@@ -103,6 +137,7 @@ class _CheckRequestState extends State<CheckRequest> {
                       borderRadius: BorderRadius.circular(15.0),
                     ),
                     elevation: 4,
+                    color: tileColor,
                     child: ListTile(
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(15.0),
@@ -110,19 +145,13 @@ class _CheckRequestState extends State<CheckRequest> {
                       title: Text(requests[index]['name'] ?? ''),
                       subtitle: Text(requests[index]['documentType'] ?? ''),
                       onTap: () => viewDetails(requests[index]),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          ElevatedButton(
-                            onPressed: () => markCompleted(index),
-                            child: Text('Completed'),
-                          ),
-                          SizedBox(width: 8),
-                          ElevatedButton(
-                            onPressed: () => markPending(index),
-                            child: Text('Pending'),
-                          ),
-                        ],
+                      trailing: ElevatedButton(
+                        onPressed: isCompleted
+                            ? null
+                            : () => markCompleted(
+                            requests[index]['adhar'],
+                            requests[index]['mobile'].toString()),
+                        child: Text(buttonText),
                       ),
                     ),
                   ),

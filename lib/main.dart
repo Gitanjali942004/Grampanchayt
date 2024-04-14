@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:grampanchayat/HomePage.dart';
@@ -12,7 +13,7 @@ void main() async{
   runApp(MyApp());
 }
 
-final TextEditingController _usernameController = TextEditingController();
+final TextEditingController _aadharNoController = TextEditingController();
 final TextEditingController _passwordController = TextEditingController();
 
 class MyApp extends StatefulWidget {
@@ -23,12 +24,13 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  late String selectedRole='ग्रामस्थ'; // Define selectedRole variable
+  String selectedRole = 'ग्रामस्थ'; // Initialize selectedRole with a default value
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       home: LoginPage(
+        selectedRole: selectedRole, // Pass selectedRole to the LoginPage widget
         onRoleChanged: (newValue) {
           setState(() {
             selectedRole = newValue; // Update selectedRole in the parent widget
@@ -37,18 +39,17 @@ class _MyAppState extends State<MyApp> {
       ),
       routes: {
         '/home': (context) => HomePage(selectedRole: selectedRole),
-        '/signup':(context) => signUpPage(),
-        '/forgotpassword':(context)=>ForgotPasswordPage(),
+        '/signup': (context) => SignUpPage(),
+        '/forgotpassword': (context) => ForgotPasswordPage(),
       },
     );
   }
 }
-
-
 class LoginPage extends StatelessWidget {
+  final String selectedRole; // Define selectedRole variable
   final Function(String) onRoleChanged; // Define a callback function
 
-  LoginPage({required this.onRoleChanged}); // Constructor to receive the callback function
+  LoginPage({required this.selectedRole, required this.onRoleChanged}); // Constructor to receive selectedRole and onRoleChanged
 
   @override
   Widget build(BuildContext context) {
@@ -106,11 +107,11 @@ class LoginPage extends StatelessWidget {
                           onChanged: onRoleChanged,
                         ),
                         TextFormField(
-                          controller: _usernameController,
+                          controller: _aadharNoController,
                           decoration: InputDecoration(
-                            labelText: 'वापरकर्ता आयडी',
+                            labelText: 'आधार क्रमांक',
                             border: OutlineInputBorder(),
-                            prefixIcon: Icon(Icons.person),
+                            prefixIcon: Icon(Icons.badge),
                           ),
                         ),
                         SizedBox(height: 20),
@@ -125,44 +126,79 @@ class LoginPage extends StatelessWidget {
                         ),
                         SizedBox(height: 20),
                         TextButton(
-                          onPressed: ()
-                          {
-                             Navigator.pushNamed(context, '/forgotpassword');
+                          onPressed: () async {
+                            if (selectedRole == 'ग्रामस्थ') {
+                              // Query Firestore to check if the user exists
+                              var snapshot = await FirebaseFirestore.instance
+                                  .collection('users')
+                                  .where('aadharCard', isEqualTo: _aadharNoController.text)
+                                  .where('password', isEqualTo: _passwordController.text)
+                                  .get();
+                              if (snapshot.docs.isNotEmpty) {
+                                // User exists, navigate to the home page
+                                Navigator.pushNamed(context, '/home');
+                              } else {
+                                // User doesn't exist, show an alert
+                                showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return AlertDialog(
+                                      title: Text('Alert'),
+                                      content: Text('Please enter correct Aadhar number or password!'),
+                                      actions: <Widget>[
+                                        TextButton(
+                                          onPressed: () {
+                                            Navigator.of(context).pop();
+                                          },
+                                          child: Text('OK'),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                );
+                              }
+                            } else if (selectedRole == 'अ‍ॅडमिन') {
+                              // Admin login logic
+                              if (_aadharNoController.text == 'admingram' &&
+                                  _passwordController.text == 'admingram9999') {
+                                Navigator.pushNamed(context, '/home');
+                              } else {
+                                // Show alert for incorrect credentials
+                                showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return AlertDialog(
+                                      title: Text('Alert'),
+                                      content: Text('Please enter correct Aadhar number or password!'),
+                                      actions: <Widget>[
+                                        TextButton(
+                                          onPressed: () {
+                                            Navigator.of(context).pop();
+                                          },
+                                          child: Text('OK'),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                );
+                              }
+                            }
                           },
-                          child:
-                          Text("तुमचा पासवर्ड विसरला?"),
-                          style: ButtonStyle(alignment: Alignment.center),
+                          child: Text('लॉगिन करा',style: TextStyle(color: Colors.white)),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green,
+                          ),
                         ),
                         SizedBox(height: 20),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: ElevatedButton(
-                                onPressed: () {
-                                  print("Button");
-
-                                  Navigator.pushNamed(context, '/home');
-                                },
-                                child: Text('लॉगिन करा',style: TextStyle(color: Colors.white)),
-                                style:ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.green,
-
-                                )
-                              ),
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: 20),
-                        TextButton(onPressed: ()
-                        {
+                        TextButton(onPressed: () {
                           Navigator.pushNamed(context, '/signup');
                         },
-                            child: Text("नविन युजर? नविन खाते उघडा")),
+                          child: Text("नविन युजर? नविन खाते उघडा"),
+                        ),
                       ],
                     ),
                   ),
                 ),
-
               ),
             ],
           ),
@@ -171,7 +207,6 @@ class LoginPage extends StatelessWidget {
     );
   }
 }
-
 
 class CustomDropdownMenu extends StatefulWidget {
   final Function(String) onChanged;
