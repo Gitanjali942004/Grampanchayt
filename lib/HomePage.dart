@@ -5,51 +5,48 @@ import 'package:grampanchayat/CheckRequest.dart';
 import 'package:grampanchayat/ContactUs.dart';
 import 'package:grampanchayat/EditProfile.dart';
 import 'package:grampanchayat/RequestForm.dart';
-import 'package:grampanchayat/main.dart';
 import 'package:grampanchayat/MyDrawer.dart';
 
 class HomePage extends StatelessWidget {
   final String selectedRole;
+  final String aadharNo;
 
-  const HomePage({Key? key, required this.selectedRole}) : super(key: key);
+  const HomePage({Key? key, required this.selectedRole, required this.aadharNo}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    print("Selected Role: $selectedRole"); // Print selectedRole
     return MaterialApp(
-      home: ImageSlider(selectedRole: selectedRole),
+      title: 'Grampanchayat App',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: ImageSlider(selectedRole: selectedRole, aadharNo: aadharNo),
       routes: {
-        '/home':(context) => HomePage(selectedRole: selectedRole),
-        '/request': (context) => RequestForm(selectedRole: selectedRole),
-        '/checkrequest':(context) => CheckRequest(selectedRole: selectedRole),
-        '/aboutus':(context) => AboutUs(selectedRole: selectedRole),
-        '/contactus':(context) => ContactUs(selectedRole: selectedRole),
-        '/editprofile':(context) => EditProfile(selectedRole: selectedRole),
-
+        '/request': (context) => RequestForm(selectedRole: selectedRole, aadharNo: aadharNo),
+        '/checkrequest': (context) => CheckRequest(selectedRole: selectedRole),
+        '/aboutus': (context) => AboutUs(selectedRole: selectedRole, aadharNo: aadharNo),
+        '/contactus': (context) => ContactUs(selectedRole: selectedRole, aadharNo: aadharNo),
+        '/editprofile': (context) => EditProfile(selectedRole: selectedRole, aadharNo: aadharNo),
       },
-
     );
-
   }
 }
 
 class ImageSlider extends StatefulWidget {
   final String selectedRole;
+  final String aadharNo;
 
-  const ImageSlider({Key? key, required this.selectedRole}) : super(key: key);
+  const ImageSlider({Key? key, required this.selectedRole, required this.aadharNo}) : super(key: key);
 
   @override
-  _ImageSliderState createState() => _ImageSliderState(selectedRole: selectedRole);
+  _ImageSliderState createState() => _ImageSliderState(selectedRole: selectedRole, aadharNo: aadharNo);
 }
 
 class _ImageSliderState extends State<ImageSlider> {
   final String selectedRole;
-
-  _ImageSliderState({required this.selectedRole});
-
+  final String aadharNo;
   int _currentIndex = 0;
   CarouselController _controller = CarouselController();
-
   final List<String> images = [
     'assets/images/g1.jpg',
     'assets/images/g2.jpg',
@@ -59,18 +56,11 @@ class _ImageSliderState extends State<ImageSlider> {
     'assets/images/g6.jpg',
   ];
 
-  @override
+  _ImageSliderState({required this.selectedRole, required this.aadharNo});
+
   @override
   Widget build(BuildContext context) {
-    double aspectRatio = MediaQuery
-        .of(context)
-        .size
-        .width /
-        (MediaQuery
-            .of(context)
-            .size
-            .height - 100);
-
+    double aspectRatio = MediaQuery.of(context).size.width / (MediaQuery.of(context).size.height - 100);
     return Scaffold(
       backgroundColor: Color(0xFFA5D7E8),
       appBar: AppBar(
@@ -99,10 +89,7 @@ class _ImageSliderState extends State<ImageSlider> {
                   child: CarouselSlider(
                     carouselController: _controller,
                     options: CarouselOptions(
-                      height: MediaQuery
-                          .of(context)
-                          .size
-                          .height - 100,
+                      height: MediaQuery.of(context).size.height - 100,
                       enlargeCenterPage: true,
                       autoPlay: true,
                       autoPlayInterval: Duration(seconds: 3),
@@ -121,10 +108,7 @@ class _ImageSliderState extends State<ImageSlider> {
                       return Builder(
                         builder: (BuildContext context) {
                           return Container(
-                            width: MediaQuery
-                                .of(context)
-                                .size
-                                .width,
+                            width: MediaQuery.of(context).size.width,
                             decoration: BoxDecoration(
                               color: Color(0xFFA5D7E8),
                             ),
@@ -139,10 +123,7 @@ class _ImageSliderState extends State<ImageSlider> {
                   ),
                 ),
                 Positioned(
-                  top: MediaQuery
-                      .of(context)
-                      .size
-                      .height / 2 - 20,
+                  top: MediaQuery.of(context).size.height / 2 - 20,
                   left: 10,
                   child: IconButton(
                     icon: Icon(Icons.arrow_back_ios),
@@ -152,10 +133,7 @@ class _ImageSliderState extends State<ImageSlider> {
                   ),
                 ),
                 Positioned(
-                  top: MediaQuery
-                      .of(context)
-                      .size
-                      .height / 2 - 20,
+                  top: MediaQuery.of(context).size.height / 2 - 20,
                   right: 10,
                   child: IconButton(
                     icon: Icon(Icons.arrow_forward_ios),
@@ -171,8 +149,9 @@ class _ImageSliderState extends State<ImageSlider> {
       ),
       drawer: MyDrawer(
         selectedRole: selectedRole,
+        aadharNo: aadharNo,
         onNavigation: (route) {
-          Navigator.pushNamed(context, route); // Navigate to selected route
+          Navigator.pushNamed(context, route);
         },
       ),
     );

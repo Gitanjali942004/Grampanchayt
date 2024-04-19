@@ -7,7 +7,7 @@ import 'firebase_options.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'ForgotPassword.dart';
 
-void main() async{
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform,);
   runApp(MyApp());
@@ -38,13 +38,14 @@ class _MyAppState extends State<MyApp> {
         },
       ),
       routes: {
-        '/home': (context) => HomePage(selectedRole: selectedRole),
+        '/home': (context) => HomePage(selectedRole: selectedRole, aadharNo: ModalRoute.of(context)!.settings.arguments as String),
         '/signup': (context) => SignUpPage(),
         '/forgotpassword': (context) => ForgotPasswordPage(),
       },
     );
   }
 }
+
 class LoginPage extends StatelessWidget {
   final String selectedRole; // Define selectedRole variable
   final Function(String) onRoleChanged; // Define a callback function
@@ -136,7 +137,11 @@ class LoginPage extends StatelessWidget {
                                   .get();
                               if (snapshot.docs.isNotEmpty) {
                                 // User exists, navigate to the home page
-                                Navigator.pushNamed(context, '/home');
+                                Navigator.pushNamed(
+                                  context,
+                                  '/home',
+                                  arguments: _aadharNoController.text, // Pass Aadhar card number to HomePage
+                                );
                               } else {
                                 // User doesn't exist, show an alert
                                 showDialog(
@@ -161,7 +166,7 @@ class LoginPage extends StatelessWidget {
                               // Admin login logic
                               if (_aadharNoController.text == 'admingram' &&
                                   _passwordController.text == 'admingram9999') {
-                                Navigator.pushNamed(context, '/home');
+                                Navigator.pushNamed(context, '/home',arguments: _aadharNoController.text);
                               } else {
                                 // Show alert for incorrect credentials
                                 showDialog(

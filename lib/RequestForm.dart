@@ -6,7 +6,16 @@ import 'package:intl/intl.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import 'MyDrawer.dart';
+import 'package:grampanchayat/RequestForm.dart';
+import 'package:grampanchayat/MyDrawer.dart';
+import 'package:grampanchayat/HomePage.dart';
+import 'package:grampanchayat/AboutUs.dart';
+import 'package:grampanchayat/CheckRequest.dart';
+import 'package:grampanchayat/ContactUs.dart';
+import 'package:grampanchayat/ForgotPassword.dart';
+import 'package:grampanchayat/EditProfile.dart';
+
+
 
 void main() {
   runApp(MyApp());
@@ -14,6 +23,7 @@ void main() {
 
 class MyApp extends StatelessWidget {
   final String selectedRole = 'ग्रामस्थ';
+  final String aadharNo = '1234567890'; // Example Aadhar number
 
   @override
   Widget build(BuildContext context) {
@@ -22,9 +32,14 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: RequestForm(selectedRole: selectedRole),
+      home: RequestForm(selectedRole: selectedRole, aadharNo: aadharNo), // Pass selectedRole and aadharNo
       routes: {
-        '/request': (context) => RequestForm(selectedRole: selectedRole),
+        '/home':(context) =>HomePage(selectedRole: selectedRole, aadharNo: aadharNo),
+        '/request': (context) => RequestForm(selectedRole: selectedRole, aadharNo: aadharNo),
+        '/checkrequest':(context) => CheckRequest(selectedRole: selectedRole),
+        '/aboutus':(context) => AboutUs(selectedRole: selectedRole,aadharNo: aadharNo),
+        '/contactus':(context) => ContactUs(selectedRole: selectedRole, aadharNo: aadharNo), // Pass selectedRole and aadharNo to ContactUs
+        '/editprofile':(context) => EditProfile(selectedRole: selectedRole, aadharNo: aadharNo),
       },
     );
   }
@@ -32,8 +47,9 @@ class MyApp extends StatelessWidget {
 
 class RequestForm extends StatefulWidget {
   final String selectedRole;
+  final String aadharNo;
 
-  const RequestForm({Key? key, required this.selectedRole}) : super(key: key);
+  const RequestForm({Key? key, required this.selectedRole, required this.aadharNo}) : super(key: key);
 
   @override
   _RequestFormState createState() => _RequestFormState();
@@ -48,7 +64,7 @@ class _RequestFormState extends State<RequestForm> {
   TextEditingController _adharController = TextEditingController();
   TextEditingController _purposeController = TextEditingController();
   String? _documentType;
-  List<String> _documentTypes = ['Passport', 'ID Card', 'Driver License'];
+  List<String> _documentTypes = ['जन्मनोंद दाखला', 'रहीवाशी दाखला', '7/12','मृत्युनोंद दाखला','दारिद्रय रेषेखालील दाखला','नमुना 8चा उतारा'];
   FilePickerResult? _file;
   DateTime? _selectedDate;
 
@@ -73,24 +89,18 @@ class _RequestFormState extends State<RequestForm> {
 
     if (result != null) {
       setState(() {
-
         _file = result;
       });
     }
   }
 
-
   Future<void> senddata() async {
-    // Format the date
     String formattedDate = _selectedDate != null
         ? DateFormat('yyyy-MM-dd').format(_selectedDate!)
         : '';
 
-    // Add your Firestore collection reference
-    CollectionReference requestCollection =
-    FirebaseFirestore.instance.collection('requests');
+    CollectionReference requestCollection = FirebaseFirestore.instance.collection('requests');
 
-    // Add data to Firestore
     await requestCollection.add({
       'name': _nameController.text,
       'mobile': _mobileController.text,
@@ -98,11 +108,10 @@ class _RequestFormState extends State<RequestForm> {
       'age': _ageController.text,
       'adhar': _adharController.text,
       'purpose': _purposeController.text,
-      'documentType': _documentType, // Add the selected document type
-      'status': 'pending', // Set the status to "pending"
+      'documentType': _documentType,
+      'status': 'pending',
     });
 
-    // Clear form fields
     _nameController.clear();
     _mobileController.clear();
     _dobController.clear();
@@ -256,20 +265,6 @@ class _RequestFormState extends State<RequestForm> {
                 },
               ),
               SizedBox(height: 10.0),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    "Ration Card",
-                    style: TextStyle(fontSize: 16.0),
-                  ),
-                  ElevatedButton(
-                    onPressed:_selectFile,
-                    child: Text('Upload'),
-                  ),
-                ],
-              ),
-              SizedBox(height: 10.0),
               ElevatedButton(
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
@@ -278,21 +273,20 @@ class _RequestFormState extends State<RequestForm> {
                       SnackBar(
                         content: Text('Form submitted successfully!'),
                       ),
-
                     );
                   }
                 },
                 child: Text('Submit'),
               ),
-
             ],
           ),
         ),
       ),
       drawer: MyDrawer(
-        selectedRole: widget.selectedRole, // Pass selectedRole from widget
+        selectedRole: widget.selectedRole, // Access selectedRole from widget
+        aadharNo: widget.aadharNo, // Access aadharNo from widget
         onNavigation: (route) {
-          Navigator.pushNamed(context, route); // Navigate to selected route
+          Navigator.pushNamed(context, route);
         },
       ),
     );
