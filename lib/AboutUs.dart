@@ -15,7 +15,7 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
-  final String selectedRole = 'ग्रामस्थ';
+  final String selectedRole = 'Gramasth';
   final String aadharNo = '1234567890'; // Example Aadhar number
 
   @override

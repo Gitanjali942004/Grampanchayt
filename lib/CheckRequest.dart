@@ -47,8 +47,8 @@ class _CheckRequestState extends State<CheckRequest> {
         // Send SMS
         String message = 'Your document is ready.';
         List<String> recipients = [mobileNumber];
-       // await sendSMS(message: message, recipients: recipients);
-       // print('SMS sent successfully');
+        // await sendSMS(message: message, recipients: recipients);
+        // print('SMS sent successfully');
 
         // Reset the state to trigger a rebuild
         setState(() {
@@ -67,7 +67,18 @@ class _CheckRequestState extends State<CheckRequest> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Request Details'),
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Request Details'),
+              IconButton(
+                icon: Icon(Icons.close),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+              ),
+            ],
+          ),
           content: Container(
             width: MediaQuery.of(context).size.width * 0.9,
             child: SingleChildScrollView(
@@ -83,22 +94,6 @@ class _CheckRequestState extends State<CheckRequest> {
               ),
             ),
           ),
-          actions: [
-            ElevatedButton(
-              onPressed: () {
-                // Add logic for accept
-                Navigator.pop(context);
-              },
-              child: Text('Accept'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                // Add logic for reject
-                Navigator.pop(context);
-              },
-              child: Text('Reject'),
-            ),
-          ],
         );
       },
     );
@@ -127,8 +122,9 @@ class _CheckRequestState extends State<CheckRequest> {
               itemBuilder: (context, index) {
                 bool isPending = requests[index]['status'] == 'pending';
                 bool isCompleted = requests[index]['status'] == 'completed';
-                Color tileColor =
-                isPending ? Colors.red : (isCompleted ? Colors.green : Colors.transparent);
+                Color tileColor = isPending
+                    ? Colors.red
+                    : (isCompleted ? Colors.green : Colors.transparent);
                 String buttonText = isPending ? 'Pending' : 'Completed';
                 return Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8.0),

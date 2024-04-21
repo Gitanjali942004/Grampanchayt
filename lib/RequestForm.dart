@@ -14,6 +14,7 @@ import 'package:grampanchayat/CheckRequest.dart';
 import 'package:grampanchayat/ContactUs.dart';
 import 'package:grampanchayat/ForgotPassword.dart';
 import 'package:grampanchayat/EditProfile.dart';
+import 'package:grampanchayat/CheckStatusScreen.dart';
 
 
 
@@ -22,7 +23,7 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
-  final String selectedRole = 'ग्रामस्थ';
+  final String selectedRole = 'Gramasth';
   final String aadharNo = '1234567890'; // Example Aadhar number
 
   @override
@@ -34,12 +35,13 @@ class MyApp extends StatelessWidget {
       ),
       home: RequestForm(selectedRole: selectedRole, aadharNo: aadharNo), // Pass selectedRole and aadharNo
       routes: {
-        '/home':(context) =>HomePage(selectedRole: selectedRole, aadharNo: aadharNo),
+        '/home': (context) => HomePage(selectedRole: selectedRole, aadharNo: aadharNo),
         '/request': (context) => RequestForm(selectedRole: selectedRole, aadharNo: aadharNo),
         '/checkrequest':(context) => CheckRequest(selectedRole: selectedRole),
         '/aboutus':(context) => AboutUs(selectedRole: selectedRole,aadharNo: aadharNo),
         '/contactus':(context) => ContactUs(selectedRole: selectedRole, aadharNo: aadharNo), // Pass selectedRole and aadharNo to ContactUs
         '/editprofile':(context) => EditProfile(selectedRole: selectedRole, aadharNo: aadharNo),
+        '/checkstatus':(context)=> CheckStatusScreen(aadharNo: aadharNo),
       },
     );
   }
@@ -107,6 +109,7 @@ class _RequestFormState extends State<RequestForm> {
       'dob': formattedDate,
       'age': _ageController.text,
       'adhar': _adharController.text,
+      'username': widget.aadharNo, // Assign the Aadhar number passed to RequestForm
       'purpose': _purposeController.text,
       'documentType': _documentType,
       'status': 'pending',
@@ -120,6 +123,7 @@ class _RequestFormState extends State<RequestForm> {
     _purposeController.clear();
     _documentType = null;
   }
+
 
   @override
   Widget build(BuildContext context) {

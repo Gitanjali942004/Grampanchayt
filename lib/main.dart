@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:grampanchayat/HomePage.dart';
 import 'package:grampanchayat/signup.dart';
+import 'CheckStatusScreen.dart';
 import 'firebase_options.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'ForgotPassword.dart';
@@ -24,7 +25,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  String selectedRole = 'ग्रामस्थ'; // Initialize selectedRole with a default value
+  String selectedRole = 'Gramasth'; // Initialize selectedRole with a default value
 
   @override
   Widget build(BuildContext context) {
@@ -41,6 +42,7 @@ class _MyAppState extends State<MyApp> {
         '/home': (context) => HomePage(selectedRole: selectedRole, aadharNo: ModalRoute.of(context)!.settings.arguments as String),
         '/signup': (context) => SignUpPage(),
         '/forgotpassword': (context) => ForgotPasswordPage(),
+        '/checkstatus':(context)=> CheckStatusScreen(aadharNo: ModalRoute.of(context)!.settings.arguments as String),
       },
     );
   }
@@ -58,7 +60,7 @@ class LoginPage extends StatelessWidget {
       backgroundColor: Color(0xFFA5D7E8),
       appBar: AppBar(
         backgroundColor: Colors.green,
-        title: Text("Grampanchayat App"),
+        title: Text("Gram Sevice App"),
       ),
       body: SingleChildScrollView(
         child: Center(
@@ -68,7 +70,7 @@ class LoginPage extends StatelessWidget {
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 10.0),
                 child: Text(
-                  "ग्रामपंचायत पोतले ",
+                  "Grampanchayat Potale ",
                   style: TextStyle(
                     fontSize: 30,
                     color: Color(0xFF0B2447),
@@ -79,13 +81,13 @@ class LoginPage extends StatelessWidget {
               ),
               SizedBox(height: 10),
               CircleAvatar(
-                radius: 50,
+                radius: 60,
                 backgroundColor: Colors.transparent,
-                backgroundImage: AssetImage('assets/images/Uni2.jpg'),
+                backgroundImage: AssetImage('assets/images/gl.jpg'),
               ),
               SizedBox(height: 10),
               Text(
-                "लॉगिन",
+                "Login",
                 style: TextStyle(
                   fontSize: 28,
                 ),
@@ -110,7 +112,7 @@ class LoginPage extends StatelessWidget {
                         TextFormField(
                           controller: _aadharNoController,
                           decoration: InputDecoration(
-                            labelText: 'आधार क्रमांक',
+                            labelText: 'Username',
                             border: OutlineInputBorder(),
                             prefixIcon: Icon(Icons.badge),
                           ),
@@ -120,89 +122,109 @@ class LoginPage extends StatelessWidget {
                           controller: _passwordController,
                           obscureText: true,
                           decoration: InputDecoration(
-                            labelText: 'पासवर्ड',
+                            labelText: 'Password',
                             border: OutlineInputBorder(),
                             prefixIcon: Icon(Icons.lock),
                           ),
+
                         ),
-                        SizedBox(height: 20),
-                        TextButton(
-                          onPressed: () async {
-                            if (selectedRole == 'ग्रामस्थ') {
-                              // Query Firestore to check if the user exists
-                              var snapshot = await FirebaseFirestore.instance
-                                  .collection('users')
-                                  .where('aadharCard', isEqualTo: _aadharNoController.text)
-                                  .where('password', isEqualTo: _passwordController.text)
-                                  .get();
-                              if (snapshot.docs.isNotEmpty) {
-                                // User exists, navigate to the home page
-                                Navigator.pushNamed(
-                                  context,
-                                  '/home',
-                                  arguments: _aadharNoController.text, // Pass Aadhar card number to HomePage
-                                );
-                              } else {
-                                // User doesn't exist, show an alert
-                                showDialog(
-                                  context: context,
-                                  builder: (BuildContext context) {
-                                    return AlertDialog(
-                                      title: Text('Alert'),
-                                      content: Text('Please enter correct Aadhar number or password!'),
-                                      actions: <Widget>[
-                                        TextButton(
-                                          onPressed: () {
-                                            Navigator.of(context).pop();
-                                          },
-                                          child: Text('OK'),
-                                        ),
-                                      ],
-                                    );
-                                  },
-                                );
-                              }
-                            } else if (selectedRole == 'अ‍ॅडमिन') {
-                              // Admin login logic
-                              if (_aadharNoController.text == 'admingram' &&
-                                  _passwordController.text == 'admingram9999') {
-                                Navigator.pushNamed(context, '/home',arguments: _aadharNoController.text);
-                              } else {
-                                // Show alert for incorrect credentials
-                                showDialog(
-                                  context: context,
-                                  builder: (BuildContext context) {
-                                    return AlertDialog(
-                                      title: Text('Alert'),
-                                      content: Text('Please enter correct Aadhar number or password!'),
-                                      actions: <Widget>[
-                                        TextButton(
-                                          onPressed: () {
-                                            Navigator.of(context).pop();
-                                          },
-                                          child: Text('OK'),
-                                        ),
-                                      ],
-                                    );
-                                  },
-                                );
-                              }
-                            }
-                          },
-                          child: Text('लॉगिन करा',style: TextStyle(color: Colors.white)),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green,
+                        Padding(
+                          padding: const EdgeInsets.only(left: 150),
+                          child: TextButton(
+                            onPressed: () {
+                              Navigator.push(context, MaterialPageRoute(builder: (context) => ForgotPasswordPage()));
+                            },
+                            child: Text("Forgot Password?"),
                           ),
                         ),
-                        SizedBox(height: 20),
-                        TextButton(onPressed: () {
-                          Navigator.pushNamed(context, '/signup');
-                        },
-                          child: Text("नविन युजर? नविन खाते उघडा"),
+
+                        SizedBox(
+                          width: double.infinity, // Set width to match the parent container width
+                          child: TextButton(
+                            onPressed: () async {
+                              if (selectedRole == 'Gramasth') {
+                                // Query Firestore to check if the user exists
+                                var snapshot = await FirebaseFirestore.instance
+                                    .collection('users')
+                                    .where('aadharCard', isEqualTo: _aadharNoController.text)
+                                    .where('password', isEqualTo: _passwordController.text)
+                                    .get();
+                                if (snapshot.docs.isNotEmpty) {
+                                  // User exists, navigate to the home page
+                                  Navigator.pushNamed(
+                                    context,
+                                    '/home',
+                                    arguments: _aadharNoController.text, // Pass Aadhar card number to HomePage
+                                  );
+                                } else {
+                                  // User doesn't exist, show an alert
+                                  showDialog(
+                                    context: context,
+                                    builder: (BuildContext context) {
+                                      return AlertDialog(
+                                        title: Text('Alert'),
+                                        content: Text('Please enter correct Aadhar number or password!'),
+                                        actions: <Widget>[
+                                          TextButton(
+                                            onPressed: () {
+                                              Navigator.of(context).pop();
+                                            },
+                                            child: Text('OK'),
+                                          ),
+                                        ],
+                                      );
+                                    },
+                                  );
+                                }
+                              } else if (selectedRole == 'Admin') {
+                                // Admin login logic
+                                if (_aadharNoController.text == 'admingram' &&
+                                    _passwordController.text == 'admingram9999') {
+                                  Navigator.pushNamed(context, '/home',arguments: _aadharNoController.text);
+                                } else {
+                                  // Show alert for incorrect credentials
+                                  showDialog(
+                                    context: context,
+                                    builder: (BuildContext context) {
+                                      return AlertDialog(
+                                        title: Text('Alert'),
+                                        content: Text('Please enter correct Aadhar number or password!'),
+                                        actions: <Widget>[
+                                          TextButton(
+                                            onPressed: () {
+                                              Navigator.of(context).pop();
+                                            },
+                                            child: Text('OK'),
+                                          ),
+                                        ],
+                                      );
+                                    },
+                                  );
+                                }
+                              }
+                            },
+                            child: Text(
+                              'Log In',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.green,
+                            ),
+                          ),
                         ),
+
+                        TextButton(
+                          onPressed: () {
+                            Navigator.pushNamed(context, '/signup');
+                          },
+                          child: Text("New User? Create New Account"),
+                        ),
+
                       ],
+
                     ),
                   ),
+
                 ),
               ),
             ],
@@ -223,7 +245,7 @@ class CustomDropdownMenu extends StatefulWidget {
 }
 
 class _CustomDropdownMenuState extends State<CustomDropdownMenu> {
-  String dropdownValue = 'ग्रामस्थ'; // Default value
+  String dropdownValue = 'Gramasth'; // Default value
 
   @override
   Widget build(BuildContext context) {
@@ -235,7 +257,7 @@ class _CustomDropdownMenuState extends State<CustomDropdownMenu> {
           widget.onChanged(newValue); // Call onChanged with the new value
         });
       },
-      items: <String>['ग्रामस्थ', 'अ‍ॅडमिन']
+      items: <String>['Gramasth', 'Admin']
           .map<DropdownMenuItem<String>>((String value) {
         return DropdownMenuItem<String>(
           value: value,

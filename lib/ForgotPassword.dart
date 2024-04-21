@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-//import 'package:fluttertoast/fluttertoast.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ForgotPasswordPage extends StatelessWidget {
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _reenterController = TextEditingController();
+  final TextEditingController _aadharCardController = TextEditingController();
+  final TextEditingController _newPasswordController = TextEditingController();
+  final TextEditingController _reenterPasswordController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -18,24 +19,10 @@ class ForgotPasswordPage extends StatelessWidget {
           child: Column(
             children: [
               SizedBox(height: 20),
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 10.0),
-                child: Text(
-                  "Forgot Your Password?",
-                  style: TextStyle(
-                    fontSize: 30,
-                    color: Color(0xFF0B2447),
-                    fontWeight: FontWeight.bold,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-              SizedBox(height: 10),
               CircleAvatar(
                 radius: 50,
                 backgroundColor: Colors.transparent,
-                backgroundImage:
-                AssetImage('assets/images/lock_icon.png'), // You can replace this with your lock icon
+                backgroundImage: AssetImage('assets/images/pas.png'),
               ),
               SizedBox(height: 10),
               Text(
@@ -47,8 +34,8 @@ class ForgotPasswordPage extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.all(20.0),
                 child: Container(
-                  width: MediaQuery.of(context).size.width, // Adjusts container width to screen width
-                  height: 300, // You can adjust this height according to your requirement
+                  width: MediaQuery.of(context).size.width,
+                  height: 350,
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(10),
@@ -60,7 +47,16 @@ class ForgotPasswordPage extends StatelessWidget {
                       children: [
                         SizedBox(height: 20),
                         TextFormField(
-                          controller: _emailController,
+                          controller: _aadharCardController,
+                          decoration: InputDecoration(
+                            labelText: 'Enter Aadhar Card',
+                            border: OutlineInputBorder(),
+                            prefixIcon: Icon(Icons.badge),
+                          ),
+                        ),
+                        SizedBox(height: 20),
+                        TextFormField(
+                          controller: _newPasswordController,
                           obscureText: true,
                           decoration: InputDecoration(
                             labelText: 'Enter New Password',
@@ -70,7 +66,7 @@ class ForgotPasswordPage extends StatelessWidget {
                         ),
                         SizedBox(height: 20),
                         TextFormField(
-                          controller: _reenterController,
+                          controller: _reenterPasswordController,
                           obscureText: true,
                           decoration: InputDecoration(
                             labelText: 'Re-enter the Password',
@@ -81,10 +77,7 @@ class ForgotPasswordPage extends StatelessWidget {
                         SizedBox(height: 20),
                         ElevatedButton(
                           onPressed: () {
-                            if (_emailController.text == _reenterController.text) {
-                              _resetPassword(_emailController.text);
-
-                            }
+                            _resetPassword(context);
                           },
                           child: Text('Reset Password', style: TextStyle(fontSize: 16)),
                           style: ElevatedButton.styleFrom(
@@ -107,12 +100,92 @@ class ForgotPasswordPage extends StatelessWidget {
     );
   }
 
-  void _resetPassword(String email) {
-    // Implement your password reset logic here
-    // Typically, you would send a reset password link to the provided email
-    // You can use email validation logic to ensure that the email is valid before sending the reset link
-    print('Reset Password for $email');
-    // You can navigate to a success page or show a message indicating that the reset link has been sent
+  void _resetPassword(BuildContext context) async {
+    String aadharCard = _aadharCardController.text;
+    String newPassword = _newPasswordController.text;
+    String reenteredPassword = _reenterPasswordController.text;
+
+    if (newPassword.isEmpty || reenteredPassword.isEmpty) {
+      _showErrorDialog(context, "Passwords cannot be empty");
+      return;
+    }
+
+    if (newPassword != reenteredPassword) {
+      _showErrorDialog(context, "Passwords do not match");
+      return;
+    }
+
+    try {
+      // Retrieve the document ID of the user based on the entered aadharCard
+      String userId = await getUserIdFromAadharCard(aadharCard);
+
+      // Update the password field in the Firestore users collection
+      await FirebaseFirestore.instance.collection('users').doc(userId).update({'password': newPassword});
+
+      // Show success message
+      _showSuccessMessage(context, "Password reset successfully");
+    } catch (error) {
+      // Show error message
+      _showErrorDialog(context, "Failed to reset password: $error");
+    }
   }
 
+  Future<String> getUserIdFromAadharCard(String aadharCard) async {
+    try {
+      // Perform a query to find the user document with the matching Aadhar Card
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .where('aadharCard', isEqualTo: aadharCard)
+          .get();
+
+      // If a document is found, return its ID
+      if (querySnapshot.docs.isNotEmpty) {
+        return querySnapshot.docs.first.id;
+      } else {
+        throw 'User not found';
+      }
+    } catch (error) {
+      throw 'Error retrieving user ID: $error';
+    }
+  }
+
+  void _showSuccessMessage(BuildContext context, String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Success"),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).popUntil((route) => route.isFirst);
+              },
+              child: Text("OK"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showErrorDialog(BuildContext context, String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Error"),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text("OK"),
+            ),
+          ],
+        );
+      },
+    );
+  }
 }

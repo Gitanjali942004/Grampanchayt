@@ -7,6 +7,8 @@ import 'package:grampanchayat/EditProfile.dart';
 import 'package:grampanchayat/RequestForm.dart';
 import 'package:grampanchayat/MyDrawer.dart';
 
+import 'CheckStatusScreen.dart';
+
 class HomePage extends StatelessWidget {
   final String selectedRole;
   final String aadharNo;
@@ -16,17 +18,19 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Grampanchayat App',
+      title: 'Gram Service App',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
       home: ImageSlider(selectedRole: selectedRole, aadharNo: aadharNo),
       routes: {
+        '/home': (context) => HomePage(selectedRole: selectedRole, aadharNo: aadharNo),
         '/request': (context) => RequestForm(selectedRole: selectedRole, aadharNo: aadharNo),
         '/checkrequest': (context) => CheckRequest(selectedRole: selectedRole),
         '/aboutus': (context) => AboutUs(selectedRole: selectedRole, aadharNo: aadharNo),
         '/contactus': (context) => ContactUs(selectedRole: selectedRole, aadharNo: aadharNo),
         '/editprofile': (context) => EditProfile(selectedRole: selectedRole, aadharNo: aadharNo),
+        '/checkstatus':(context)=> CheckStatusScreen(aadharNo: aadharNo),
       },
     );
   }
@@ -65,7 +69,7 @@ class _ImageSliderState extends State<ImageSlider> {
       backgroundColor: Color(0xFFA5D7E8),
       appBar: AppBar(
         backgroundColor: Colors.green,
-        title: Text("Grampanchayat App"),
+        title: Text("Gram Service App"),
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -73,7 +77,7 @@ class _ImageSliderState extends State<ImageSlider> {
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 10.0),
             child: Text(
-              "ग्रामपंचायत पोतले",
+              "Grampanchayat Potale",
               style: TextStyle(
                 fontSize: 30,
                 color: Color(0xFF0B2447),

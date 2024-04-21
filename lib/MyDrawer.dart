@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 
 class MyDrawer extends StatefulWidget {
   final String selectedRole;
@@ -23,7 +25,7 @@ class _MyDrawerState extends State<MyDrawer> {
   @override
   void initState() {
     super.initState();
-    if (widget.selectedRole != 'अ‍ॅडमिन') {
+    if (widget.selectedRole != 'Admin') {
       fetchUserData();
     } else {
       setState(() {
@@ -83,7 +85,7 @@ class _MyDrawerState extends State<MyDrawer> {
                     ),
                   ],
                 ),
-                accountEmail: widget.selectedRole != 'अ‍ॅडमिन'
+                accountEmail: widget.selectedRole != 'Admin'
                     ? Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -111,15 +113,22 @@ class _MyDrawerState extends State<MyDrawer> {
             ListTile(
               leading: const Icon(Icons.home),
               title: const Text(' Home '),
-              onTap: () => widget.onNavigation('/home'),
+              onTap: () => widget.onNavigation('/home'), // Navigate to '/home' route
             ),
-            if (widget.selectedRole == 'ग्रामस्थ')
+            if (widget.selectedRole == 'Gramasth')
               ListTile(
                 leading: const Icon(Icons.book),
                 title: const Text(' Issue Request '),
                 onTap: () => widget.onNavigation('/request'),
               ),
-            if (widget.selectedRole == 'अ‍ॅडमिन')
+            if (widget.selectedRole == 'Gramasth')
+              ListTile(
+                leading: const Icon(Icons.check),
+                title: const Text(' Check Status '),
+                onTap: () => widget.onNavigation('/checkstatus'),
+              ),
+
+            if (widget.selectedRole == 'Admin')
               ListTile(
                 leading: const Icon(Icons.book),
                 title: const Text(' Check Request '),
@@ -130,12 +139,7 @@ class _MyDrawerState extends State<MyDrawer> {
               title: const Text(' About Us'),
               onTap: () => widget.onNavigation('/aboutus'),
             ),
-            ListTile(
-              leading: const Icon(Icons.group),
-              title: const Text(' Our Team '),
-              onTap: () => widget.onNavigation('/contactus'),
-            ),
-            if (widget.selectedRole == 'ग्रामस्थ')
+            if (widget.selectedRole == 'Gramasth')
               ListTile(
                 leading: const Icon(Icons.edit),
                 title: const Text(' Edit Profile '),
@@ -144,9 +148,13 @@ class _MyDrawerState extends State<MyDrawer> {
             ListTile(
               leading: const Icon(Icons.logout),
               title: const Text('LogOut'),
-              onTap: () {
-                Navigator.pushReplacementNamed(
-                    context, '/login'); // Navigate to login page (LoginPage)
+              onTap: () async {
+                try {
+                  await FirebaseAuth.instance.signOut();
+                  Navigator.pushReplacementNamed(context, '/login');
+                } catch (e) {
+                  print('Error signing out: $e');
+                }
               },
             ),
           ],

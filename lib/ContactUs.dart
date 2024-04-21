@@ -9,6 +9,7 @@ import 'package:grampanchayat/EditProfile.dart';
 import 'package:grampanchayat/RequestForm.dart';
 import 'package:grampanchayat/main.dart';
 
+import 'CheckStatusScreen.dart';
 import 'MyDrawer.dart';
 
 void main() {
@@ -16,7 +17,7 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
-  final String selectedRole = 'ग्रामस्थ';
+  final String selectedRole = 'Gramasth';
   final String aadharNo = '1234567890'; // Example Aadhar number
 
   @override
@@ -29,13 +30,13 @@ class MyApp extends StatelessWidget {
       home: ContactUs(selectedRole: selectedRole, aadharNo: aadharNo),
       routes: {
         '/h': (context) => HomePage(selectedRole: selectedRole, aadharNo: aadharNo),
-        '/home':(context) =>HomePage(selectedRole: selectedRole, aadharNo: aadharNo),
+        '/home': (context) => HomePage(selectedRole: selectedRole, aadharNo: aadharNo),
         '/request': (context) => RequestForm(selectedRole: selectedRole, aadharNo: aadharNo),
         '/checkrequest': (context) => CheckRequest(selectedRole: selectedRole),
         '/aboutus': (context) => ContactUs(selectedRole: selectedRole, aadharNo: aadharNo),
         '/contactus': (context) => ContactUs(selectedRole: selectedRole, aadharNo: aadharNo),
         '/editprofile': (context) => EditProfile(selectedRole: selectedRole, aadharNo: aadharNo),
-
+        '/checkstatus':(context)=> CheckStatusScreen(aadharNo: aadharNo),
       },
     );
   }
@@ -61,7 +62,7 @@ class _ContactUsState extends State<ContactUs> {
       backgroundColor: Color(0xFFA5D7E8),
       appBar: AppBar(
         backgroundColor: Colors.green,
-        title: Text("Grampanchayat App"),
+        title: Text("Gram Service App"),
         leading: IconButton(
           icon: Icon(Icons.menu), // Hamburger icon
           onPressed: () {
@@ -75,7 +76,7 @@ class _ContactUsState extends State<ContactUs> {
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Text(
-              "ग्रामपंचायत पोतले",
+              "Grampanchayat Potale",
               style: TextStyle(
                 fontSize: 30,
                 color: Color(0xFF0B2447),
@@ -193,7 +194,7 @@ class _ContactUsState extends State<ContactUs> {
 // }
 //
 // class MyApp extends StatelessWidget {
-//   final String selectedRole = 'ग्रामस्थ';
+//   final String selectedRole = 'Gramasth';
 //   @override
 //   Widget build(BuildContext context) {
 //     return MaterialApp(
